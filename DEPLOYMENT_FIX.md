@@ -8,9 +8,15 @@ We've configured the project to use CPU-only PyTorch and exclude CUDA libraries.
 
 ## Changes Made
 
-### 1. Updated `requirements.txt`
-- Added CPU-only PyTorch installation with `--extra-index-url`
-- Specified CPU versions: `torch==2.1.0+cpu`, `torchvision==0.16.0+cpu`, `torchaudio==2.1.0+cpu`
+### 1. Created `requirements-vercel.txt`
+- Separate requirements file for Vercel deployment
+- Uses `--extra-index-url` to install CPU-only PyTorch
+- Specified CPU versions: `torch==2.9.1+cpu`, `torchvision==0.20.1+cpu`, `torchaudio==2.9.1+cpu`
+- All dependencies listed in correct order
+
+### 2. Updated `requirements.txt`
+- Kept simple for local development
+- PyTorch will be installed by sentence-transformers (can be CPU or CUDA locally)
 
 ### 2. Created `.vercelignore`
 - Excludes large CUDA libraries from Vercel deployment
@@ -66,15 +72,41 @@ print(f"Device: {torch.device('cpu')}")
 
 ## Vercel Deployment
 
-1. **Commit the changes:**
+### Option A: Use requirements-vercel.txt (Recommended)
+
+1. **In Vercel Dashboard:**
+   - Go to Project Settings → Build & Development Settings
+   - Set "Install Command" to: `pip install --no-cache-dir -r requirements-vercel.txt`
+
+2. **Or create `vercel.json` with build command:**
+   ```json
+   {
+     "buildCommand": "pip install --no-cache-dir -r requirements-vercel.txt"
+   }
+   ```
+
+### Option B: Use Environment Variable
+
+1. **In Vercel Dashboard:**
+   - Go to Project Settings → Environment Variables
+   - Add: `PIP_EXTRA_INDEX_URL` = `https://download.pytorch.org/whl/cpu`
+   - Update `requirements.txt` to include:
+     ```
+     --extra-index-url https://download.pytorch.org/whl/cpu
+     torch==2.9.1+cpu
+     torchvision==0.20.1+cpu
+     torchaudio==2.9.1+cpu
+     ```
+
+2. **Commit the changes:**
    ```bash
-   git add requirements.txt .vercelignore .gitignore database.py
+   git add requirements-vercel.txt .vercelignore .gitignore database.py
    git commit -m "Fix: Use CPU-only PyTorch to reduce deployment size"
    git push
    ```
 
-2. **Vercel will automatically:**
-   - Use the updated `requirements.txt` with CPU-only PyTorch
+3. **Vercel will automatically:**
+   - Use the CPU-only PyTorch installation
    - Respect `.vercelignore` to exclude large files
    - Build should complete without CUDA libraries
 

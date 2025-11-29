@@ -1,0 +1,35 @@
+# Vercel-specific requirements with CPU-only PyTorch
+# This file is used during Vercel builds to avoid CUDA dependencies
+
+# Install CPU-only PyTorch from PyTorch's CPU repository
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.9.1+cpu
+torchvision==0.20.1+cpu
+torchaudio==2.9.1+cpu
+
+# Core dependencies
+flask==2.3.3
+flask-cors==4.0.0
+requests==2.31.0
+python-dotenv==1.0.0
+python-docx==0.8.11
+PyPDF2==3.0.1
+psycopg2-binary==2.9.9
+sqlalchemy==2.0.23
+azure-communication-email==1.0.0
+pinecone==5.0.0
+
+# ML/AI dependencies (will use CPU-only PyTorch installed above)
+sentence-transformers==2.2.2
+pandas==2.2.2
+numpy==1.26.4
+
+# Other dependencies
+Pillow==10.0.0
+python-magic==0.4.27
+PyJWT==2.8.0
+bcrypt==4.0.1
+msal==1.31.1
+gunicorn==21.2.0
+azure-devops==7.1.0b4
+
