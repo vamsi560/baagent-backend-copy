@@ -1,0 +1,109 @@
+[
+  {
+    "timestamp": "2025-09-05T09:37:33.907116",
+    "stage": "content_extraction",
+    "tokens_used": 2011.1000000000001,
+    "model_used": "local_processing",
+    "details": {
+      "file_type": "docx",
+      "text_length": 10380,
+      "images_count": 0
+    }
+  },
+  {
+    "timestamp": "2025-09-05T09:37:59.088169",
+    "stage": "planning_analysis",
+    "tokens_used": 0,
+    "model_used": "gemini-1.5-pro",
+    "details": {
+      "error": "Service unavailable (503) (attempt 1)",
+      "retry_delay": 2
+    }
+  },
+  {
+    "timestamp": "2025-09-05T09:38:23.749846",
+    "stage": "planning_analysis",
+    "tokens_used": 5493,
+    "model_used": "gemini-1.5-pro",
+    "details": {
+      "input_tokens": 2519,
+      "output_tokens": 2974,
+      "input_characters": 11437,
+      "response_length": 0,
+      "is_json": false,
+      "attempt": 2,
+      "images_in_prompt": 0
+    }
+  },
+  {
+    "timestamp": "2025-09-05T09:38:58.184793",
+    "stage": "trd_writer",
+    "tokens_used": 11843,
+    "model_used": "gemini-1.5-pro",
+    "details": {
+      "input_tokens": 6010,
+      "output_tokens": 5833,
+      "input_characters": 32185,
+      "response_length": 0,
+      "is_json": false,
+      "attempt": 1,
+      "images_in_prompt": 0
+    }
+  },
+  {
+    "timestamp": "2025-09-05T09:39:05.949732",
+    "stage": "enhanced_generation",
+    "tokens_used": 7639,
+    "model_used": "gemini-1.5-pro",
+    "details": {
+      "input_tokens": 6603,
+      "output_tokens": 1036,
+      "input_characters": 35106,
+      "response_length": 0,
+      "is_json": false,
+      "attempt": 1,
+      "images_in_prompt": 0
+    }
+  },
+  {
+    "timestamp": "2025-09-05T09:39:17.293241",
+    "stage": "enhanced_generation",
+    "tokens_used": 9098,
+    "model_used": "gemini-1.5-pro",
+    "details": {
+      "input_tokens": 7518,
+      "output_tokens": 1580,
+      "input_characters": 37399,
+      "response_length": 0,
+      "is_json": false,
+      "attempt": 1,
+      "images_in_prompt": 0
+    }
+  },
+  {
+    "timestamp": "2025-09-05T09:39:53.913370",
+    "stage": "enhanced_generation",
+    "tokens_used": 18721,
+    "model_used": "gemini-1.5-pro",
+    "details": {
+      "input_tokens": 12461,
+      "output_tokens": 6260,
+      "input_characters": 65657,
+      "response_length": 0,
+      "is_json": true,
+      "attempt": 1,
+      "images_in_prompt": 0
+    }
+  },
+  {
+    "timestamp": "2025-09-05T09:39:54.949096",
+    "stage": "analysis_complete",
+    "tokens_used": 54805.1,
+    "model_used": "gemini-1.5-pro",
+    "details": {
+      "total_stages": 7,
+      "analysis_id": "45ff67a7-983c-44d4-901d-22bca7637729",
+      "filename": "SOV.docx"
+    }
+  }
+]

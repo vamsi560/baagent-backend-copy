@@ -1,0 +1,11 @@
+# Azure DevOps Configuration
+# Replace YOUR_NEW_PAT_HERE with the new Personal Access Token
+ADO_PERSONAL_ACCESS_TOKEN=DHDzeRhCouK9QI5q2q0cgu7OJpwKU7bJzkwvq2HxZhOquS4qkdxUJQQJ99BIACAAAAAAhliiAAASAZDO39lF
+ADO_ORGANIZATION_URL=https://dev.azure.com/prayankagochipatula/
+ADO_PROJECT_NAME=Backstage
+
+# Other configurations
+GEMINI_API_KEY=AIzaSyA5_KnR58T2MTG4oOvBeAqbd8idJCdOlRA
+ACS_CONNECTION_STRING=endpoint=https://baagentacs123.india.communication.azure.com/;accesskey=3NFm6rs3wKyuP2B5BljzjkjGlWUC7SXWIilVOiHlF0jlpJQ8PiQ6JQQJ99BIACULyCpAhliiAAAAAZCSEmoo
+ACS_SENDER_ADDRESS=DoNotReply@0a996688-51d4-48e5-a65c-ad35a83a9c77.azurecomm.net
+APPROVAL_RECIPIENT_EMAIL=Raghavendra.Lakkamaraju@valuemomentum.com 
