@@ -8,6 +8,13 @@ psycopg2-binary==2.9.9
 sqlalchemy==2.0.23
 azure-communication-email==1.0.0
 pinecone==5.0.0
+
+# CPU-only PyTorch to avoid large CUDA dependencies
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.1.0+cpu
+torchvision==0.16.0+cpu
+torchaudio==2.1.0+cpu
+
 sentence-transformers==2.2.2
 
 pandas==2.2.2

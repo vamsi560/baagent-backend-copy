@@ -51,19 +51,25 @@ if PINECONE_ENABLED:
         pinecone_client = None
     
     # Initialize embedding model (separate from Pinecone)
+    # Force CPU-only to avoid CUDA dependencies
     try:
+        import os
+        # Ensure PyTorch uses CPU only
+        os.environ['CUDA_VISIBLE_DEVICES'] = ''
+        
         from sentence_transformers import SentenceTransformer
-        print("Loading embedding model (this may take a moment)...")
+        print("Loading embedding model (CPU-only, this may take a moment)...")
         embedding_model = SentenceTransformer('all-MiniLM-L6-v2', device='cpu')
-        print("SUCCESS: Embedding model initialized successfully")
+        print("SUCCESS: Embedding model initialized successfully (CPU-only)")
     except ImportError as e:
         print(f"WARNING: sentence-transformers not installed: {e}")
         print("   Install with: pip install sentence-transformers")
+        print("   For CPU-only: pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu")
         embedding_model = None
     except Exception as e:
         print(f"WARNING: Embedding model initialization failed: {e}")
         print("   This may be due to torch/torchvision compatibility issues")
-        print("   Try: pip install --upgrade torch torchvision")
+        print("   For CPU-only: pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu")
         embedding_model = None
 else:
     print("INFO: Pinecone disabled")
