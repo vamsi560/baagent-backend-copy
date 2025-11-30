@@ -1,42 +1,40 @@
-# Azure Web App Requirements
-# CPU-only PyTorch to reduce deployment size
-
-# Install CPU-only PyTorch from PyTorch's CPU repository
---extra-index-url https://download.pytorch.org/whl/cpu
-torch
-torchvision
-torchaudio
+# Vercel Lightweight Requirements (No PyTorch)
+# Use Gemini embeddings instead of sentence-transformers to avoid torch dependency
+# Uses existing GEMINI_API_KEY - no additional API key needed!
 
 # Core Flask dependencies
 flask==2.3.3
 flask-cors==4.0.0
-gunicorn==21.2.0
-
-# Database
-psycopg2-binary==2.9.9
-sqlalchemy==2.0.23
+requests==2.31.0
+python-dotenv==1.0.0
 
 # File processing
 python-docx==0.8.11
 PyPDF2==3.0.1
 Pillow==10.0.0
-python-magic==0.4.27
+
+# Database
+psycopg2-binary==2.9.9
+sqlalchemy==2.0.23
+
+# Vector Database (Pinecone - no torch needed)
+pinecone==5.0.0
+
+# Embeddings (Gemini - lightweight, no torch, uses existing GEMINI_API_KEY)
+google-generativeai==0.3.2
 
 # Azure services
 azure-communication-email==1.0.0
 azure-devops==7.1.0b4
 
-# ML/AI
-pinecone==5.0.0
-sentence-transformers==2.2.2
-pandas==2.2.2
-numpy==1.26.4
-
 # Utilities
-requests==2.31.0
-python-dotenv==1.0.0
 PyJWT==2.8.0
 bcrypt==4.0.1
 msal==1.31.1
+gunicorn==21.2.0
+
+# Data processing (lightweight)
+pandas==2.2.2
+numpy==1.26.4
 
 

@@ -1,11 +1,10 @@
-# Ignore large PyTorch CUDA libraries (not needed for CPU-only inference)
-.vercel/python/py3.12/_vendor/torch/lib/libtorch_cuda.so
+# Ignore ALL PyTorch libraries (not needed for Gemini embeddings)
+.vercel/python/py3.12/_vendor/torch/**
 .vercel/python/py3.12/_vendor/nvidia/**
-.vercel/python/py3.12/_vendor/torch/lib/libtorch_cuda*
 .vercel/python/py3.12/_vendor/triton/**
-
-# Ignore other large unnecessary files
-.vercel/python/py3.12/_vendor/torch/lib/libtorch_cpu.so
+**/torch/**
+**/nvidia/**
+**/triton/**
 __pycache__/
 *.pyc
 *.pyo

@@ -15,7 +15,7 @@
       "dest": "main.py"
     }
   ],
-  "buildCommand": "pip install -r requirements-vercel-lightweight.txt",
+  "buildCommand": "pip install --no-cache-dir -r requirements.txt",
   "env": {
     "GEMINI_EMBEDDING_DIMENSION": "768"
   }
