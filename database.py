@@ -29,7 +29,8 @@ PINECONE_ENABLED = os.getenv('PINECONE_ENABLED', 'true').lower() == 'true'
 PINECONE_API_KEY = os.getenv('PINECONE_API_KEY', 'pcsk_4B1bSV_9t2GM5KafTYtQ6iDEkKjS1cEX2kr9Zbyp5Dg2oA9Mp8hwgQnPo1SdwVbiUZ1s1i')
 PINECONE_ENVIRONMENT = os.getenv('PINECONE_ENVIRONMENT', 'us-east-1')
 PINECONE_INDEX_NAME = os.getenv('PINECONE_INDEX_NAME', 'ba-agent-documents')
-VECTOR_SIZE = 384  # Dimension for all-MiniLM-L6-v2 embeddings
+# Vector size depends on embedding method (set dynamically)
+VECTOR_SIZE = int(os.getenv('GEMINI_EMBEDDING_DIMENSION', '768'))  # Default to Gemini size (768, 1536, or 3072)
 
 # Initialize Pinecone client and embedding model
 pinecone_client = None
@@ -51,26 +52,54 @@ if PINECONE_ENABLED:
         pinecone_client = None
     
     # Initialize embedding model (separate from Pinecone)
-    # Force CPU-only to avoid CUDA dependencies
-    try:
-        import os
-        # Ensure PyTorch uses CPU only
-        os.environ['CUDA_VISIBLE_DEVICES'] = ''
-        
-        from sentence_transformers import SentenceTransformer
-        print("Loading embedding model (CPU-only, this may take a moment)...")
-        embedding_model = SentenceTransformer('all-MiniLM-L6-v2', device='cpu')
-        print("SUCCESS: Embedding model initialized successfully (CPU-only)")
-    except ImportError as e:
-        print(f"WARNING: sentence-transformers not installed: {e}")
-        print("   Install with: pip install sentence-transformers")
-        print("   For CPU-only: pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu")
-        embedding_model = None
-    except Exception as e:
-        print(f"WARNING: Embedding model initialization failed: {e}")
-        print("   This may be due to torch/torchvision compatibility issues")
-        print("   For CPU-only: pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu")
-        embedding_model = None
+    # Try multiple embedding options in order of preference:
+    # 1. Gemini embeddings (lightweight, no torch needed, already using Gemini API)
+    # 2. Sentence transformers (requires torch, larger)
+    embedding_model = None
+    embedding_type = None
+    
+    # Option 1: Try Gemini embeddings first (lightweight, no torch, uses existing GEMINI_API_KEY)
+    gemini_api_key = os.getenv('GEMINI_API_KEY')
+    if gemini_api_key:
+        try:
+            import google.generativeai as genai
+            genai.configure(api_key=gemini_api_key)
+            # Test Gemini connection
+            embedding_model = 'gemini'
+            embedding_type = 'gemini'
+            VECTOR_SIZE = int(os.getenv('GEMINI_EMBEDDING_DIMENSION', '768'))  # Default 768, can be 1536 or 3072
+            print(f"SUCCESS: Using Gemini embeddings (lightweight, no torch required, {VECTOR_SIZE} dimensions)")
+        except ImportError:
+            print("INFO: google-generativeai package not installed, trying sentence-transformers...")
+            embedding_model = None
+        except Exception as e:
+            print(f"WARNING: Gemini embedding initialization failed: {e}")
+            embedding_model = None
+    
+    # Option 2: Fallback to sentence-transformers (requires torch)
+    if embedding_model is None:
+        try:
+            import os
+            # Ensure PyTorch uses CPU only
+            os.environ['CUDA_VISIBLE_DEVICES'] = ''
+            
+            from sentence_transformers import SentenceTransformer
+            print("Loading embedding model (CPU-only, this may take a moment)...")
+            embedding_model = SentenceTransformer('all-MiniLM-L6-v2', device='cpu')
+            embedding_type = 'sentence-transformers'
+            VECTOR_SIZE = 384  # all-MiniLM-L6-v2 dimension
+            print("SUCCESS: Embedding model initialized successfully (CPU-only)")
+        except ImportError as e:
+            print(f"WARNING: sentence-transformers not installed: {e}")
+            print("   Install with: pip install sentence-transformers")
+            print("   OR use Gemini embeddings: set GEMINI_API_KEY environment variable")
+            embedding_model = None
+            embedding_type = None
+        except Exception as e:
+            print(f"WARNING: Embedding model initialization failed: {e}")
+            print("   Consider using Gemini embeddings instead (set GEMINI_API_KEY)")
+            embedding_model = None
+            embedding_type = None
 else:
     print("INFO: Pinecone disabled")
 
@@ -450,6 +479,40 @@ def update_approval_in_db_with_data(db, approval_id: str, update_data: dict):
 # VECTOR DATABASE OPERATIONS (Pinecone)
 # ============================================================================
 
+def _generate_embedding(text: str):
+    """Generate embedding using available method (Gemini or sentence-transformers)"""
+    global embedding_model, embedding_type
+    
+    if embedding_type == 'gemini':
+        try:
+            import google.generativeai as genai
+            # Use Gemini embedding model
+            result = genai.embed_content(
+                model="models/embedding-001",
+                content=text,
+                task_type="retrieval_document"  # or "retrieval_query" for queries
+            )
+            # Gemini returns embedding in result.embedding or result['embedding']
+            if hasattr(result, 'embedding'):
+                return result.embedding
+            elif isinstance(result, dict) and 'embedding' in result:
+                return result['embedding']
+            else:
+                # Try accessing as list
+                return list(result) if result else None
+        except Exception as e:
+            print(f"ERROR: Gemini embedding failed: {e}")
+            return None
+    elif embedding_type == 'sentence-transformers' and embedding_model:
+        try:
+            return embedding_model.encode(text).tolist()
+        except Exception as e:
+            print(f"ERROR: Sentence transformer embedding failed: {e}")
+            return None
+    else:
+        print("ERROR: No embedding method available")
+        return None
+
 def add_to_vector_db(content: str, meta: dict, lob: str = None):
     """Add content to Pinecone vector database"""
     if not PINECONE_ENABLED or not embedding_model or not pinecone_client:
@@ -457,8 +520,31 @@ def add_to_vector_db(content: str, meta: dict, lob: str = None):
         return
     
     try:
-        # Generate embedding
-        embedding = embedding_model.encode(content).tolist()
+        # Generate embedding using available method
+        # For Gemini, use retrieval_document task type
+        if embedding_type == 'gemini':
+            try:
+                import google.generativeai as genai
+                result = genai.embed_content(
+                    model="models/embedding-001",
+                    content=content,
+                    task_type="retrieval_document"
+                )
+                # Handle different return formats
+                if hasattr(result, 'embedding'):
+                    embedding = result.embedding
+                elif isinstance(result, dict) and 'embedding' in result:
+                    embedding = result['embedding']
+                else:
+                    embedding = list(result) if result else None
+            except Exception as e:
+                print(f"ERROR: Gemini document embedding failed: {e}")
+                return
+        else:
+            embedding = _generate_embedding(content)
+        if embedding is None:
+            print("ERROR: Failed to generate embedding")
+            return
         
         # Create ID
         doc_id = meta.get('id', str(uuid.uuid4()))
@@ -494,8 +580,31 @@ def search_vector_db(query: str, lob: str = None, limit: int = 10):
         return []
     
     try:
-        # Generate query embedding
-        query_embedding = embedding_model.encode(query).tolist()
+        # Generate query embedding using available method
+        # For Gemini, use retrieval_query task type
+        if embedding_type == 'gemini':
+            try:
+                import google.generativeai as genai
+                result = genai.embed_content(
+                    model="models/embedding-001",
+                    content=query,
+                    task_type="retrieval_query"
+                )
+                # Handle different return formats
+                if hasattr(result, 'embedding'):
+                    query_embedding = result.embedding
+                elif isinstance(result, dict) and 'embedding' in result:
+                    query_embedding = result['embedding']
+                else:
+                    query_embedding = list(result) if result else None
+            except Exception as e:
+                print(f"ERROR: Gemini query embedding failed: {e}")
+                return []
+        else:
+            query_embedding = _generate_embedding(query)
+        if query_embedding is None:
+            print("ERROR: Failed to generate query embedding")
+            return []
         
         # Get index (new Pinecone API)
         index = pinecone_client.Index(PINECONE_INDEX_NAME)
