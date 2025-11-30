@@ -4247,4 +4247,8 @@ if __name__ == '__main__':
     print("✅ Document analysis enabled")
     print("✅ All original functionality preserved")
     
-    app.run(debug=True, port=5000)
+    # Get port from environment (Azure Web App sets PORT)
+    port = int(os.getenv('PORT', 5000))
+    debug = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
+    
+    app.run(debug=debug, host='0.0.0.0', port=port)

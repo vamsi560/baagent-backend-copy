@@ -1,0 +1,6 @@
+[config]
+SCM_DO_BUILD_DURING_DEPLOYMENT=true
+PRE_BUILD_COMMAND=pip install --upgrade pip setuptools wheel
+POST_BUILD_COMMAND=python -c "from database import init_db; init_db()" || true
+
+
